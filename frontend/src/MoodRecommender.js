@@ -1,42 +1,33 @@
-// Import useEffect and useCallback
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react'; // Removed useEffect, useCallback
 import axios from 'axios';
 import { motion } from 'framer-motion'; 
 import { FaSmileBeam } from 'react-icons/fa'; 
 
 const API_URL = 'http://localhost:8000';
 const moods = ["happy", "sad", "chill", "energetic", "live", "romantic"];
-const REC_COUNT = 12;
+// const REC_COUNT = 12; // Removed
 
 function MoodRecommender({ setResults, setLoading, setError, setActiveSong }) {
     const [mood, setMood] = useState('happy');
     const [tags, setTags] = useState('');
-    const [numRecs, setNumRecs] = useState(REC_COUNT);
+    // const [numRecs, setNumRecs] = useState(REC_COUNT); // Removed
 
-    // *** CHANGED: Wrap handleSubmit in useCallback ***
-    const handleSubmit = useCallback(async (e, loadMore = false) => {
+    // *** CHANGED: Simplified handleSubmit, removed 'loadMore' logic ***
+    const handleSubmit = async (e) => {
         if (e) e.preventDefault();
-        
-        let count = REC_COUNT;
-        // *** FIXED: Base the new count on the *current* numRecs state ***
-        if (loadMore) {
-            count = numRecs + REC_COUNT;
-        } else {
-            setResults(null); 
-        }
         
         setLoading(true);
         setError('');
-        setActiveSong(null);
-        setNumRecs(count);
+        setActiveSong(null); // Clear modal
+        setResults(null); // Clear previous results
         
         const tagsArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
         
         try {
             const response = await axios.post(`${API_URL}/api/recommend-mood`, {
                 mood: mood,
-                tags: tagsArray,
-                num_recommendations: count 
+                tags: tagsArray
+                // num_recommendations is no longer sent, Python will use its default
             });
             setResults(response.data);
         } catch (err) {
@@ -44,25 +35,15 @@ function MoodRecommender({ setResults, setLoading, setError, setActiveSong }) {
             setResults(null);
         }
         setLoading(false);
-    // *** CHANGED: Add all dependencies for useCallback ***
-    }, [mood, tags, numRecs, setResults, setLoading, setError, setActiveSong]);
+    };
 
-    // This event listener now correctly uses the stable handleSubmit function
-    useEffect(() => {
-        const form = document.getElementById('mood-recommender-form');
-        // This function wrapper ensures it calls the *latest* handleSubmit
-        const handleLoadMore = () => handleSubmit(null, true);
-        
-        if (form) { // Check if form exists
-            form.addEventListener('loadMore', handleLoadMore);
-            return () => form.removeEventListener('loadMore', handleLoadMore);
-        }
-    }, [handleSubmit]); // This dependency is now stable
+    // *** REMOVED: useEffect for loadMore event listener ***
 
     return (
         <div className="recommender">
             <h2>Find Songs For Your Mood...</h2>
-            <form onSubmit={handleSubmit} id="mood-recommender-form">
+            {/* *** REMOVED: id from form *** */}
+            <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label htmlFor="mood">Select Mood</label>
                     <select id="mood" value={mood} onChange={(e) => setMood(e.target.value)}>

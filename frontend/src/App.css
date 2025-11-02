@@ -15,58 +15,52 @@ body {
     animation: gradientAnimation 20s ease infinite;
     
     min-height: 100vh;
-    padding: 0; /* No padding on body */
+    padding: 0; 
     margin: 0;
 }
 
-/* --- NEW 2-COLUMN LAYOUT --- */
+/* --- 2-COLUMN LAYOUT (Unchanged) --- */
 .app-container {
     display: flex;
     min-height: 100vh;
 }
 
 .sidebar {
-    flex: 0 0 400px; /* Sidebar is 400px wide, doesn't grow or shrink */
+    flex: 0 0 400px;
     padding: 30px;
-    
-    /* Glassmorphism for the sidebar */
     background-color: rgba(20, 20, 20, 0.7);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-right: 1px solid rgba(255, 255, 255, 0.1);
-    
-    /* Allows content to scroll if sidebar is too short */
     overflow-y: auto;
-    height: 100vh; /* Full height */
+    height: 100vh;
     position: sticky;
     top: 0;
 }
 
 .main-content {
-    flex: 1; /* Main content takes up the rest of the space */
+    flex: 1;
     padding: 30px;
-    overflow-y: auto; /* Allow results to scroll */
+    overflow-y: auto;
 }
 
+/* --- SIDEBAR CONTENT (Unchanged) --- */
 .header {
-    text-align: left; /* Aligned left in sidebar */
+    text-align: left;
     border-bottom: 2px solid #1DB954;
     padding-bottom: 10px;
     margin-bottom: 30px;
 }
-
 .header h1 {
     color: #1DB954;
     margin: 0;
     font-weight: 700;
 }
-
 .toggle-buttons {
-    display: flex; /* Changed from text-align */
+    display: flex;
     margin-bottom: 20px;
     gap: 10px;
 }
-
 .toggle-buttons button {
     font-size: 1rem;
     padding: 10px 20px;
@@ -77,40 +71,33 @@ body {
     font-weight: 600;
     border-radius: 50px;
     transition: all 0.3s ease;
-    flex: 1; /* Make buttons equal width */
+    flex: 1;
 }
-
 .toggle-buttons button.active {
     background-color: #1DB954;
     color: #121212;
     box-shadow: 0 0 15px rgba(29, 185, 84, 0.5);
 }
-
 .recommender {
-    /* This is now just a wrapper, no glass */
     background-color: transparent;
     padding: 0;
     border: none;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
 }
-
 .recommender h2 {
     margin-top: 0;
     color: #eee;
 }
-
 .form-group {
     margin-bottom: 15px;
 }
-
 .form-group label {
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
     color: #b3b3b3;
 }
-
 .form-group input, .form-group select {
     width: 100%;
     padding: 12px;
@@ -122,13 +109,11 @@ body {
     font-size: 1rem;
     transition: border-color 0.3s, box-shadow 0.3s;
 }
-
 .form-group input:focus, .form-group select:focus {
     outline: none;
     border-color: #1DB954;
     box-shadow: 0 0 10px rgba(29, 185, 84, 0.3);
 }
-
 .submit-button {
     font-size: 1rem;
     padding: 12px 24px;
@@ -142,49 +127,37 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%; /* Make button full width */
+    width: 100%;
 }
-
 .submit-button:hover {
     background-color: #1ed760;
     box-shadow: 0 0 15px rgba(29, 185, 84, 0.5);
 }
-
 .submit-button:disabled {
     background-color: #535353;
     cursor: not-allowed;
 }
 
+/* --- MAIN CONTENT (Unchanged) --- */
 .results {
-    margin-top: 0; /* No margin in main content */
+    margin-top: 0;
 }
-
 .error-container {
     padding: 40px;
     text-align: center;
     background-color: rgba(255, 107, 107, 0.1);
     border-radius: 12px;
 }
-
 .error-container h3 {
     color: #ff6b6b;
     margin: 0;
 }
-
-.loading {
-    text-align: center;
-    font-style: italic;
-    color: #b3b3b3;
-    margin-top: 15px;
-}
-
 .results h3 {
     color: #1DB954;
     border-bottom: 1px solid #444;
     padding-bottom: 5px;
     font-size: 1.8rem;
 }
-
 .results-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -192,7 +165,7 @@ body {
     margin-top: 15px;
 }
 
-/* --- SONG CARD STYLES --- */
+/* --- SONG CARD STYLES (Unchanged) --- */
 .song-card {
     background-color: rgba(58, 58, 58, 0.5);
     backdrop-filter: blur(12px);
@@ -203,12 +176,10 @@ body {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
 }
-
 .song-card:hover {
     transform: translateY(-5px) scale(1.02);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
 }
-
 .card-embed .spotify-embed-placeholder {
     width: 100%;
     height: 80px;
@@ -219,11 +190,9 @@ body {
     color: #999;
     font-style: italic;
 }
-
 .card-info {
     padding: 15px;
 }
-
 .card-title {
     margin: 0 0 5px 0;
     font-size: 1.1rem;
@@ -233,26 +202,22 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
 .card-artist {
     margin: 0 0 10px 0;
     color: #b3b3b3;
     font-size: 0.9rem;
 }
-
 .card-score {
     margin: 0 0 10px 0;
     font-weight: 700;
     color: #1DB954;
     font-size: 0.9rem;
 }
-
 .card-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
 }
-
 .card-tag {
     background-color: rgba(0, 0, 0, 0.2);
     color: #ccc;
@@ -262,7 +227,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* --- MODAL STYLES --- */
+/* --- MODAL STYLES (CHANGED) --- */
 .modal-backdrop {
     position: fixed;
     top: 0;
@@ -276,42 +241,135 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    /* Allow scrolling within the backdrop */
+    overflow-y: auto; 
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .modal-content {
     width: 90%;
-    max-width: 450px;
+    max-width: 500px; /* Made modal a bit wider */
     background-color: #282828;
     border-radius: 12px;
     padding: 20px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     pointer-events: auto;
+    /* Add margin-top for scrolling */
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
-.modal-content h3 {
+.modal-album-art {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.modal-info h3 {
     margin-top: 10px;
     margin-bottom: 5px;
     color: #fff;
+    font-size: 1.5rem;
 }
 
-.modal-content p {
+.modal-info p {
     margin: 0 0 15px 0;
     color: #b3b3b3;
+    line-height: 1.4;
 }
 
-/* --- LOAD MORE BUTTON --- */
-.load-more-container {
-    display: flex;
-    justify-content: center;
-    padding: 30px 0;
+.modal-info p strong {
+    color: #fff;
+    font-weight: 600;
 }
+
+/* --- NEW: VibeCheck Meter Styles --- */
+.vibe-check {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #444;
+}
+.vibe-check h4 {
+    margin: 0 0 10px 0;
+    color: #1DB954;
+}
+.vibe-meter {
+    margin-bottom: 8px;
+}
+.vibe-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 4px;
+}
+.vibe-bar-background {
+    width: 100%;
+    height: 8px;
+    background-color: #404040;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.vibe-bar-foreground {
+    height: 100%;
+    background-color: #1DB954;
+    border-radius: 4px;
+}
+
+/* --- NEW: Genius Info Styles --- */
+.genius-info {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #444;
+}
+.genius-info h4 {
+    margin: 0 0 10px 0;
+    color: #FFFB65; /* Genius Yellow */
+}
+.modal-description {
+    font-size: 0.9rem;
+    color: #b3b3b3;
+    line-height: 1.5;
+    /* Allow scrolling for long descriptions */
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 8px;
+    white-space: pre-wrap; /* Preserves formatting */
+}
+.genius-button {
+    display: inline-block;
+    text-align: center;
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    background-color: #FFFB65;
+    color: #121212;
+    font-weight: 700;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.genius-button:hover {
+    background-color: #fff;
+    transform: scale(1.03);
+}
+
 
 /* --- SKELETON LOADER STYLES --- */
 @keyframes skeletonPulse {
   0% { background-color: rgba(100, 100, 100, 0.2); }
   50% { background-color: rgba(100, 100, 100, 0.4); }
   100% { background-color: rgba(100, 100, 100, 0.2); }
+}
+
+.modal-loader .skeleton-line {
+    animation: skeletonPulse 1.5s ease-in-out infinite;
+    background-color: rgba(100, 100, 100, 0.2);
+    border-radius: 8px;
 }
 
 .skeleton-card {
