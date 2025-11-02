@@ -2,7 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const axios = require('axios');
-require('dotenv').config(); 
+require('dotenv').config();
+const { Client } = require('genius-lyrics'); 
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -10,7 +11,7 @@ const PORT = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
 
-const MONGO_URI = 'mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/musicDB?retryWrites=true&w=majority';
+const MONGO_URI = process.env.MONGO_URI; 
 const PYTHON_ML_SERVICE_URL = 'http://127.0.0.1:5000';
 
 // --- Spotify API Setup ---
@@ -20,7 +21,7 @@ let spotifyToken = { value: null, expiresAt: null };
 
 // --- Genius API Setup ---
 const GENIUS_ACCESS_TOKEN = process.env.GENIUS_ACCESS_TOKEN;
-const GENIUS_API_URL = 'https://api.genius.com'; 
+const geniusClient = GENIUS_ACCESS_TOKEN ? new Client(GENIUS_ACCESS_TOKEN) : null;
 
 // Function to get a new Spotify token (Unchanged)
 const getSpotifyToken = async () => {
@@ -76,7 +77,6 @@ app.post('/api/recommend-song', async (req, res) => {
         else { res.status(500).json({ error: 'Error communicating with ML service.' }); }
     }
 });
-
 app.post('/api/recommend-mood', async (req, res) => {
     try {
         const response = await axios.post(`${PYTHON_ML_SERVICE_URL}/recommend-mood`, req.body);
@@ -136,74 +136,38 @@ app.get('/api/audio-features', async (req, res) => {
 });
 
 
-// *** CHANGED: Genius Info Endpoint (This is the fix) ***
+// *** CHANGED: Genius Info Endpoint (re-added, but simplified) ***
 app.get('/api/genius-info', async (req, res) => {
     const { song, artist } = req.query;
     if (!song || !artist) {
         return res.status(400).json({ error: 'Song and artist are required' });
     }
 
-    if (!GENIUS_ACCESS_TOKEN) {
+    if (!geniusClient) {
         console.error("Genius Access Token is missing. Check your .env file.");
         return res.status(500).json({ error: 'Genius API key not configured on server.' });
     }
 
     try {
-        // 1. Search for the song on Genius
-        const searchQuery = encodeURIComponent(`${song} ${artist}`);
-        const searchResponse = await axios.get(`${GENIUS_API_URL}/search?q=${searchQuery}`, {
-            headers: { 'Authorization': `Bearer ${GENIUS_ACCESS_TOKEN}` }
-        });
+        // 1. Use the library's search method
+        const searchQuery = `${song} ${artist}`;
+        const songs = await geniusClient.songs.search(searchQuery);
 
-        // 2. Find the first (best) hit
-        const hits = searchResponse.data.response.hits;
-        if (!hits || hits.length === 0 || !hits[0].result) {
+        if (!songs || songs.length === 0) {
             return res.status(404).json({ error: 'Song not found on Genius' });
         }
+
+        // 2. Get the first song (most likely match)
+        const songData = songs[0];
         
-        const songId = hits[0].result.id;
-
-        // 3. Get the full song details using the ID
-        const songResponse = await axios.get(`${GENIUS_API_URL}/songs/${songId}`, {
-            headers: { 'Authorization': `Bearer ${GENIUS_ACCESS_TOKEN}` }
-        });
-
-        if (!songResponse.data || !songResponse.data.response || !songResponse.data.response.song) {
-            return res.status(404).json({ error: 'Could not get song details from Genius' });
-        }
-        
-        const songData = songResponse.data.response.song;
-
-        // 4. *** THIS IS THE CRITICAL FIX ***
-        // We will find the *correct* annotation, which is the "description_annotation"
-        let description = 'No description available for this song.'; // Default
-        
-        try {
-            // Find the annotation that is the "description"
-            const descriptionAnnotation = songData.description_annotation;
-
-            // Now, safely extract the 'plain' text from its body
-            if (descriptionAnnotation && 
-                descriptionAnnotation.annotations && 
-                descriptionAnnotation.annotations.length > 0 &&
-                descriptionAnnotation.annotations[0].body &&
-                descriptionAnnotation.annotations[0].body.plain) {
-                
-                description = descriptionAnnotation.annotations[0].body.plain;
-            }
-        } catch (e) {
-            // This catch block prevents a server crash if the path is broken
-            console.log("Could not parse Genius description, using default.", e.message);
-        }
-
+        // 3. ONLY send back the URL
         res.json({
-            description: description,
             geniusUrl: songData.url
         });
 
     } catch (error) {
-        console.error('Error fetching Genius info:', error.response ? error.response.data : error.message);
-        res.status(500).json({ error: 'Failed to fetch Genius info. Check backend logs and API keys.' });
+        console.error('Error fetching Genius info with genius-lyrics:', error.message);
+        res.status(500).json({ error: 'Failed to fetch Genius info. Check backend logs.' });
     }
 });
 

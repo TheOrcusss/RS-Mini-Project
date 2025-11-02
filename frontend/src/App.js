@@ -7,7 +7,7 @@ import ResultsGrid from './ResultsGrid';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import './App.css';
 
-// Helper component for the Spotify Embed
+// Helper component for the Spotify Embed (Unchanged)
 const SpotifyEmbed = ({ trackId, height = 80 }) => {
     if (!trackId) {
         return <div className="spotify-embed-placeholder" style={{height: `${height}px`}}>Preview Not Available</div>;
@@ -27,15 +27,12 @@ const SpotifyEmbed = ({ trackId, height = 80 }) => {
     );
 };
 
-// Modal Loader Component (Updated)
+// Modal Loader Component (Unchanged)
 const ModalLoader = () => {
     return (
         <div className="modal-loader">
-            {/* Placeholder for Album Art */}
             <div className="skeleton-line" style={{ height: '300px', width: '300px', margin: '0 auto 20px auto' }}></div>
-            {/* Placeholder for Spotify Player */}
             <div className="skeleton-line" style={{ height: '80px', marginBottom: '20px' }}></div>
-            {/* Placeholder for Text */}
             <div className="skeleton-line title" style={{ width: '60%', height: '24px' }}></div>
             <div className="skeleton-line text" style={{ width: '40%' }}></div>
         </div>
@@ -46,67 +43,71 @@ const ModalLoader = () => {
 function App() {
     const [mode, setMode] = useState('song');
     
-    // State is lifted up
+    // State is lifted up (Unchanged)
     const [results, setResults] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     
-    // Modal State
+    // Modal State (Unchanged)
     const [activeSong, setActiveSong] = useState(null);
     const [metadata, setMetadata] = useState(null); 
     const [modalLoading, setModalLoading] = useState(false); 
 
-    // *** UPDATED: Function to open modal and fetch ALL data ***
+    // *** NEW: State to control the layout ***
+    const [hasSearched, setHasSearched] = useState(false);
+
+    // handleCardClick (Unchanged)
     const handleCardClick = async (song) => {
         setActiveSong(song);
         setModalLoading(true);
         setMetadata(null); 
 
-        // 1. Create all three API requests
         const metadataRequest = axios.get(`http://localhost:8000/api/spotify-metadata?trackId=${song.spotify_id}`);
-        // This next one is from our "VibeCheck" idea, let's assume you added that endpoint
         const featuresRequest = axios.get(`http://localhost:8000/api/audio-features?trackId=${song.spotify_id}`);
-        // The new Genius request
         const geniusRequest = axios.get(`http://localhost:8000/api/genius-info?song=${song.name}&artist=${song.artist}`);
 
-        try {
-            // 2. Run all three requests in parallel
-            const [
-                metadataRes, 
-                featuresRes, 
-                geniusRes
-            ] = await Promise.all([
-                metadataRequest, 
-                featuresRequest, 
-                geniusRequest
-            ]);
-            
-            // 3. Combine all data into one state object
-            setMetadata({
-                ...metadataRes.data,
-                ...featuresRes.data,
-                ...geniusRes.data
-            });
+        const [
+            metadataResult,
+            featuresResult,
+            geniusResult
+        ] = await Promise.allSettled([
+            metadataRequest,
+            featuresRequest,
+            geniusRequest
+        ]);
 
-        } catch (err) {
-            console.error("Failed to fetch all song data:", err);
-            // If it fails, just show the basic info
-            setMetadata({ name: song.name, artistName: song.artist }); 
-        } finally {
-            setModalLoading(false);
+        let combinedData = { name: song.name, artistName: song.artist };
+        if (metadataResult.status === 'fulfilled') {
+            combinedData = { ...combinedData, ...metadataResult.value.data };
         }
+        if (featuresResult.status === 'fulfilled') {
+            combinedData = { ...combinedData, ...featuresResult.value.data };
+        }
+        if (geniusResult.status === 'fulfilled') {
+            combinedData = { ...combinedData, ...geniusResult.value.data };
+        }
+        
+        setMetadata(combinedData);
+        setModalLoading(false);
     };
 
-    // Function to close the modal
+    // closeModal (Unchanged)
     const closeModal = () => {
         setActiveSong(null);
         setMetadata(null);
     };
 
     return (
-        <div className="app-container">
-            {/* === SIDEBAR (Unchanged) === */}
-            <div className="sidebar">
+        // *** CHANGED: Added dynamic class based on state ***
+        <div className={`app-container ${hasSearched ? 'has-searched' : ''}`}>
+            
+            {/* === SIDEBAR === */}
+            {/* *** CHANGED: Wrapped in motion.div and added layout prop *** */}
+            <motion.div 
+                className="sidebar" 
+                layout 
+                transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }} // Smooth ease
+            >
                 <header className="header">
                     <h1>VibeCheck 🎵</h1>
                     <p>Music Recommendation Engine</p>
@@ -145,6 +146,7 @@ function App() {
                                 setLoading={setLoading}
                                 setError={setError}
                                 setActiveSong={setActiveSong} 
+                                setHasSearched={setHasSearched} // <-- NEW PROP
                             />
                         </motion.div>
                     ) : (
@@ -160,50 +162,64 @@ function App() {
                                 setLoading={setLoading}
                                 setError={setError}
                                 setActiveSong={setActiveSong} 
+                                setHasSearched={setHasSearched} // <-- NEW PROP
                             />
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
+            </motion.div> {/* End of motion.div sidebar */}
 
             {/* === MAIN CONTENT (RESULTS) === */}
-            <div className="main-content">
-                <AnimatePresence>
-                    {loading && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                        >
-                            <SkeletonGrid /> 
-                        </motion.div>
-                    )}
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="error-container"
-                        >
-                            <h3>Error</h3>
-                            <p>{error}</p>
-                        </motion.div>
-                    )}
-                    {results && !loading && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                        >
-                            <ResultsGrid 
-                                data={results} 
-                                onCardClick={handleCardClick} 
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+            {/* *** CHANGED: Wrapped in AnimatePresence to fade in *** */}
+            <AnimatePresence>
+                {/* Only render this section if a search has been initiated */}
+                {hasSearched && (
+                    <motion.div 
+                        className="main-content"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5, delay: 0.3 }} // Delay to let sidebar move
+                    >
+                        <AnimatePresence>
+                            {loading && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                >
+                                    <SkeletonGrid /> 
+                                </motion.div>
+                            )}
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="error-container"
+                                >
+                                    <h3>Error</h3>
+                                    <p>{error}</p>
+                                </motion.div>
+                            )}
+                            {results && !loading && (
+                                // *** CHANGED: Added style to make this fill height ***
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
+                                >
+                                    <ResultsGrid 
+                                        data={results} 
+                                        onCardClick={handleCardClick} 
+                                    />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-            {/* === MODAL (CHANGED) === */}
+            {/* === MODAL (Unchanged) === */}
             <AnimatePresence>
                 {activeSong && (
                     <motion.div
@@ -221,7 +237,6 @@ function App() {
                             exit={{ y: "100vh", opacity: 0 }}
                             transition={{ type: "spring", damping: 20, stiffness: 300 }}
                         >
-                            {/* Show loader OR content */}
                             {modalLoading ? (
                                 <ModalLoader />
                             ) : (
@@ -238,8 +253,6 @@ function App() {
                                             {metadata ? metadata.albumName : `(${activeSong.year})`}
                                             {metadata && metadata.releaseDate && ` (${metadata.releaseDate.split('-')[0]})`}
                                         </p>
-
-                                        {/* --- NEW: VIBECHECK FEATURES --- */}
                                         {metadata && metadata.energy && (
                                             <div className="vibe-check">
                                                 <h4>VibeCheck™</h4>
@@ -248,14 +261,8 @@ function App() {
                                                 <VibeMeter label="Happiness" value={metadata.valence} />
                                             </div>
                                         )}
-
-                                        {/* --- NEW: GENIUS HISTORY & LYRICS --- */}
-                                        {metadata && metadata.description && (
+                                        {metadata && metadata.geniusUrl && (
                                             <div className="genius-info">
-                                                <h4>About the Song</h4>
-                                                <p className="modal-description">
-                                                    {metadata.description}
-                                                </p>
                                                 <a 
                                                     href={metadata.geniusUrl} 
                                                     target="_blank" 
@@ -277,7 +284,7 @@ function App() {
     );
 }
 
-// *** NEW: VibeMeter Component (for Spotify Features) ***
+// *** VibeMeter Component (Unchanged) ***
 const VibeMeter = ({ label, value }) => {
     const percentage = Math.round(value * 100);
     return (
