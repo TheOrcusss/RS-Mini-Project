@@ -58,9 +58,9 @@ function App() {
         setModalLoading(true);
         setMetadata(null); 
 
-        const metadataRequest = axios.get(`http://localhost:8000/api/spotify-metadata?trackId=${song.spotify_id}`);
-        const featuresRequest = axios.get(`http://localhost:8000/api/audio-features?trackId=${song.spotify_id}`);
-        const geniusRequest = axios.get(`http://localhost:8000/api/genius-info?song=${song.name}&artist=${song.artist}`);
+        const metadataRequest = axios.get(`https://rs-mini-project.onrender.com/api/spotify-metadata?trackId=${song.spotify_id}`);
+        const featuresRequest = axios.get(`https://rs-mini-project.onrender.com/api/audio-features?trackId=${song.spotify_id}`);
+        const geniusRequest = axios.get(`https://rs-mini-project.onrender.com/api/genius-info?song=${song.name}&artist=${song.artist}`);
 
         const [
             metadataResult,
