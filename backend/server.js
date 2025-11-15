@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 const MONGO_URI = process.env.MONGO_URI; 
-const PYTHON_ML_SERVICE_URL = 'http://127.0.0.1:5000';
+const PYTHON_ML_SERVICE_URL = 'https://rs-mini-project-1.onrender.com';
 
 // --- Spotify API Setup ---
 const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
